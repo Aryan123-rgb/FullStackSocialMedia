@@ -4,16 +4,29 @@ import { BsFiletypeGif, BsPersonFillAdd } from "react-icons/bs";
 import { BiImages, BiSolidVideo } from "react-icons/bi";
 import TextInput from "../components/TextInput";
 import CustomButton from "../components/CustomButton";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { createPost, getAllPosts } from "../redux/slice/postSlice";
 import PostCard from "../components/PostCard";
+import ProfileCard from "../components/ProfileCard";
+import { showToast } from "../utils/toast";
+import { useNavigate } from "react-router-dom";
 
 function Home() {
   const [description, setDescription] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
-  const [posts, setPosts] = useState();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const userId = localStorage.getItem("shareFunUserId");
+  const posts = useSelector((state) => state.postReduer?.posts?.data);
+
+  console.log("post", posts);
+
+  useEffect(() => {
+    if (!userId) {
+      navigate("/login");
+    }
+  });
 
   const uploadToCloudinary = async (file) => {
     try {
@@ -32,7 +45,6 @@ function Home() {
 
       if (response.ok) {
         const data = await response.json();
-        console.log("Image uploaded:", data);
         return data?.secure_url;
       } else {
         console.log("Error uploading image");
@@ -52,7 +64,7 @@ function Home() {
 
   const handleSubmit = async () => {
     if (!description) {
-      alert("Description is required");
+      showToast("Description is required", "info");
       return;
     }
 
@@ -62,10 +74,14 @@ function Home() {
       imageUrl = await uploadToCloudinary(selectedFile);
     }
 
-    const data = { description: description, image: imageUrl || "" };
+    const data = {
+      description: description,
+      image: imageUrl || "",
+      userId: userId,
+    };
 
-    const response = await dispatch(createPost(data));
-    console.log(response);
+    await dispatch(createPost(data));
+    fetchAllPostFunction();
 
     setDescription("");
     setPreviewImage("");
@@ -73,9 +89,7 @@ function Home() {
   };
 
   const fetchAllPostFunction = async () => {
-    const response = await dispatch(getAllPosts());
-    setPosts(response.payload.data);
-    console.log(response);
+    await dispatch(getAllPosts());
   };
 
   useEffect(() => {
@@ -87,21 +101,21 @@ function Home() {
       <div className="w-full flex gap-2 lg:gap-4 pt-5 pb-10 h-full">
         {/* LEFT */}
 
-        {/* <div className="hidden w-1/3 lg:w-1/4 h-full md:flex flex-col gap-6 overflow-y-auto">
-          <ProfileCard user={user} />
-          <FriendsCard friends={user?.friends} />
-        </div> */}
+        <div className="hidden w-1/3 lg:w-1/4 h-full md:flex flex-col gap-6 overflow-y-auto">
+          <ProfileCard />
+          {/* <FriendsCard friends={user?.friends} /> */}
+        </div>
 
         {/* CENTER */}
 
         <div className="flex-1 h-full px-4 flex flex-col gap-6 overflow-y-auto rounded-lg">
           <div className="bg-primary px-4 rounded-lg">
             <div className="w-full flex items-center gap-2 py-4 border-b border-[#66666645]">
-              {/* <img
-              src={user?.profileUrl ?? NoProfile}
-              alt="User Image"
-              className="w-14 h-14 rounded-full object-cover"
-            /> */}
+              <img
+                src="https://www.codewithantonio.com/_next/image?url=%2Flogo2.png&w=48&q=75"
+                alt="User Image"
+                className="w-14 h-14 rounded-full object-cover"
+              />
               <div className="w-full flex flex-col mt-2">
                 <div>
                   <input

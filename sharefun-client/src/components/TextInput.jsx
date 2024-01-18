@@ -11,8 +11,6 @@ const TextInput = React.forwardRef(
       register,
       name,
       error,
-      required,
-      key
     },
     ref
   ) => {

@@ -24,7 +24,9 @@ const mongooseOptions = {
   family: 4,
 };
 
-mongoose.connect("mongodb://127.0.0.1:27017/sharefun", mongooseOptions).then(
+console.log(process.env.DATABASE_URL);
+
+mongoose.connect(process.env.DATABASE_URL, mongooseOptions).then(
   () => {
     console.log("Connected to MongoDB");
   },
@@ -37,7 +39,7 @@ app.use(helmet());
 app.use(
   cors({
     credentials: true,
-    origin: "http://localhost:5173",
+    origin: process.env.REACT_APP_URL,
   })
 );
 app.use(bodyParser.json());
@@ -47,6 +49,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(morgan("dev"));
 
+app.get("/", (req, res) => res.json("ok"));
 app.use("/auth", authRouter);
 app.use("/post", postRouter);
 

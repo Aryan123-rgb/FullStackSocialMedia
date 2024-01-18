@@ -9,7 +9,7 @@ export const register = async (req, res) => {
     const userExist = await Users.findOne({ email });
 
     if (userExist) {
-      res.status(404).json({ message: "Email Already exists" });
+      res.status(404).json({ err: true, msg: "Email Already exists" });
       return;
     }
 
@@ -26,41 +26,40 @@ export const register = async (req, res) => {
 
     res
       .status(201)
-      .json({ success: true, message: "Registration successfull", data: user });
+      .json({ err: false, msg: "Registration successfull", data: user });
   } catch (error) {
     console.log(error);
     res.status(404).json({ message: error.message });
   }
 };
 
-export const login = async (req, res, next) => {
+export const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
     const user = await Users.findOne({ email });
 
     if (!user) {
-      res.status(404).json({ message: "Invalid Email" });
-      return;
+      return res.status(404).json({ err: true, msg: "Email Id has not been registered" });
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-      res.status(404).json({ message: "Invalid Password" });
+      return res.status(404).json({ err: true, msg: "Invalid Password" });
     }
 
     const generatedToken = generateTokenForUser(user);
 
     res.cookie("token", generatedToken);
 
-    res.status(201).json({
-      success: true,
-      message: "Login successfully",
+    return res.status(201).json({
+      err: false,
+      msg: "Login successfull",
       data: user,
     });
   } catch (error) {
     console.log(error);
-    res.status(404).json({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 };

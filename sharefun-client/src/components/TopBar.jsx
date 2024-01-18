@@ -1,6 +1,6 @@
 import React from "react";
 import { TbSocial } from "react-icons/tb";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { BsMoon, BsSunFill } from "react-icons/bs";
 import { IoMdNotificationsOutline } from "react-icons/io";
 import TextInput from "./TextInput";
@@ -12,6 +12,7 @@ import { useForm } from "react-hook-form";
 const TopBar = () => {
   const dispatch = useDispatch();
   const { theme } = useSelector((state) => state.themeReducer);
+  const navigate = useNavigate();
 
   const {
     register: formRegister,
@@ -23,6 +24,12 @@ const TopBar = () => {
     const themeValue = theme === "light" ? "dark" : "light";
     dispatch(SetTheme(themeValue));
   };
+
+  const handleLogout = () => {
+    localStorage.removeItem("shareFunUserId");
+    navigate("/");
+  };
+  
   return (
     <div className="topbar w-full flex items-center justify-between py-3 md:py-6 px-4 bg-primary">
       <Link to="/" className="flex gap-2 items-center">
@@ -62,12 +69,11 @@ const TopBar = () => {
         </div>
 
         <div>
-          <Link to={"/login"}>
-            <CustomButton
-              title="Log Out"
-              containerStyles="text-sm text-ascent-1 px-4 md:px-6 py-1 md:py-2 border border-[#666] rounded-full"
-            />
-          </Link>
+          <CustomButton
+            title="Log Out"
+            containerStyles="text-sm text-ascent-1 px-4 md:px-6 py-1 md:py-2 border border-[#666] rounded-full"
+            onClick={handleLogout}
+          />
         </div>
       </div>
     </div>

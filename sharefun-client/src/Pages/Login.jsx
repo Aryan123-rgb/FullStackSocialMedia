@@ -1,34 +1,48 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { TbSocial } from "react-icons/tb";
 import { BsShare } from "react-icons/bs";
 import { AiOutlineInteraction } from "react-icons/ai";
 import { ImConnection } from "react-icons/im";
-import TextInput from "../components/TextInput";
-import { BgImage } from "../assets";
+import { useForm, Controller } from "react-hook-form";
+import { Input } from "@material-tailwind/react";
 import CustomButton from "../components/CustomButton";
-import { login } from "../redux/slice/authSlice";
+import { BgImage } from "../assets";
 import { useDispatch } from "react-redux";
-import { useForm } from "react-hook-form";
+import { login, registerUser } from "../redux/slice/authSlice";
+import { showToast } from "../utils/toast";
 
 const Login = () => {
-  const dispatch = useDispatch();
-
   const {
-    register: formRegister,
+    control,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    mode: "onTouched",
+  });
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const onSubmit = async (data) => {
-    const { "Email Address": email, Password: password } = data;
+    try {
+      const response = await dispatch(login(data));
+      const userData = response?.payload?.data;
+      const msg = response?.payload?.msg;
+      const isError = response?.payload?.err;
 
-    const transformedData = { email, password };
-    console.log(transformedData);
-
-    const response = await dispatch(login(transformedData));
-    console.log(response);
+      if (isError) {
+        showToast(msg, "error");
+        return;
+      } else {
+        showToast(msg, "success");
+        dispatch(registerUser(userData));
+        navigate("/");
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
+
   return (
     <div className="bg-bgColor w-full h-screen flex items-center justify-center p-6">
       <div className="w-full md:w-2/3 h-fit lg:h-full 2xl:h-5/6 py-8 lg:py-0 flex bg-primary rounded-xl overflow-hidden shadow-xl">
@@ -49,39 +63,70 @@ const Login = () => {
           <span className="text-sm mt-2 text-ascent-2">Welcome back</span>
 
           <form
-            onSubmit={handleSubmit(onSubmit)}
             className="py-8 flex flex-col gap-5"
+            onSubmit={handleSubmit(onSubmit)}
           >
-            <TextInput
-              id="email"
-              type="email"
-              placeholder="email@example.com"
-              styles="w-full"
-              label="Email Address"
-              register={formRegister}
-              required="true"
-            />
-
-            <TextInput
-              id="password"
-              type="password"
-              placeholder="Password"
-              styles="w-full"
-              label="Password"
-              register={formRegister}
-              required="true"
-            />
-
-            <Link
-              to="/reset-password"
-              className="text-sm text-right text-blue-500 font-semibold"
-            >
-              Forgot Password ?
-            </Link>
-
+            <div className="flex flex-col justify-center">
+              <p className="text-gray-600 mb-1">Email ID</p>
+              <Controller
+                name="email"
+                control={control}
+                rules={{
+                  required: "Email ID is Required",
+                  pattern: {
+                    value: /^([a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/,
+                    message: "Email ID is invalid",
+                  },
+                }}
+                render={({ field }) => (
+                  <Input
+                    type="email"
+                    size="lg"
+                    placeholder="example@gmail.com"
+                    {...field}
+                    error={Boolean(errors?.email?.message)}
+                  />
+                )}
+              />
+              {errors?.email?.message && (
+                <span className="error-text text-sm mt-1">
+                  {errors?.email?.message}
+                </span>
+              )}
+            </div>
+            <div>
+              <p className="text-gray-600 mb-1">Password</p>
+              <Controller
+                name="password"
+                control={control}
+                rules={{
+                  required: "Password is Required",
+                  pattern: {
+                    value:
+                      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[#$@!%&*?])[A-Za-z\d#$@!%&*?]{8,30}$/,
+                    message:
+                      "Password not strong enough. Should contain one capital letter, one small letter, one number, and one special character",
+                  },
+                }}
+                render={({ field }) => (
+                  <Input
+                    type="password"
+                    size="lg"
+                    {...field}
+                    placeholder="Password"
+                    error={Boolean(errors?.password?.message)}
+                  />
+                )}
+              />
+              {errors?.password?.message && (
+                <span className="error-text text-sm mt-1">
+                  {errors?.password?.message}
+                </span>
+              )}
+            </div>
             <CustomButton
               type="submit"
-              containerStyles="inline-flex justify-center rounded-md bg-blue-500 px-8 py-3 text-sm font-medium outline-none hover:bg-blue-600"
+              containerStyles={`inline-flex justify-center rounded-md bg-blue-700 px-8 py-3 text-sm font-medium text-white outline-none`}
               title="Login"
             />
           </form>
@@ -123,7 +168,7 @@ const Login = () => {
 
           <div className="mt-16 text-center">
             <p className="text-white text-base">
-              Connect with friedns & have share for fun
+              Connect with friends & have fun sharing
             </p>
             <span className="text-sm text-white/80">
               Share memories with friends and the world.

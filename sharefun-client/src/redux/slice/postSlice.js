@@ -1,34 +1,18 @@
-import { createAsyncThunk } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { baseUrl, getUserIdfromToken } from "./authSlice";
+import { baseUrl } from "./authSlice";
 
 export const createPost = createAsyncThunk(
   "post/createPost",
   async (data, { rejectWithValue }) => {
     try {
-      const userId = getUserIdfromToken();
-      data.userId = userId;
-      const response = await axios.post(
-        `${baseUrl}/post/createPost`,
-        data
-      );
+      const response = await axios.post(`${baseUrl}/post/createPost`, data);
       return response?.data;
     } catch (error) {
       return rejectWithValue(error?.response.data);
     }
   }
 );
-
-// export const createPost = async (data) => {
-//   try {
-//     const userId = getUserIdfromToken();
-//     data.userId = userId;
-//     const response = await axios.post(`${baseUrl}/post/createPost`, da);
-//     return response;
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
 
 export const getAllPosts = createAsyncThunk(
   "post/getAllPost",
@@ -41,3 +25,32 @@ export const getAllPosts = createAsyncThunk(
     }
   }
 );
+
+const initialState = {
+  posts: [],
+  loading: false,
+  error: null,
+};
+
+const postSlice = createSlice({
+  name: "posts",
+  initialState,
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(getAllPosts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getAllPosts.fulfilled, (state, action) => {
+        state.loading = false;
+        state.posts = action.payload;
+      })
+      .addCase(getAllPosts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+  },
+});
+
+export default postSlice.reducer;

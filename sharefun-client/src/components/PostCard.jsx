@@ -11,10 +11,6 @@ const PostCard = ({ post }) => {
 
   const user = post?.userId;
 
-  useEffect(() => {
-    console.log(post);
-  }, []);
-
   return (
     <div className="mb-2 bg-primary p-4 rounded-xl">
       {/* User Information */}

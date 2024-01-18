@@ -13,13 +13,13 @@ export const createPost = async (req, res) => {
     });
 
     res.status(200).json({
-      sucess: true,
-      message: "Post created successfully",
+      err: false,
+      msg: "Post created successfully",
       data: post,
     });
   } catch (error) {
     console.log(error);
-    res.status(404).json({ message: error.message });
+    res.status(404).json({ msg: error.message });
   }
 };
 
@@ -32,12 +32,12 @@ export const getAllPosts = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "All posts fetched",
+      msg: "All posts fetched",
       data: posts,
     });
   } catch (error) {
     console.log(error);
-    res.status(404).json({ message: error.message });
+    res.status(404).json({ msg: error.message });
   }
 };
 

@@ -1,39 +1,46 @@
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { TbSocial } from "react-icons/tb";
 import { BsShare } from "react-icons/bs";
 import { AiOutlineInteraction } from "react-icons/ai";
 import { ImConnection } from "react-icons/im";
-import TextInput from "../components/TextInput";
-import CustomButton from "../components/CustomButton";
-import { BgImage } from "../assets";
-import { Link } from "react-router-dom";
+import { useForm, Controller } from "react-hook-form";
+import { Input, Button, Select, Option } from "@material-tailwind/react";
 import { useDispatch } from "react-redux";
-import { register } from "../redux/slice/authSlice";
-import { useForm } from "react-hook-form";
+import { register, registerUser } from "../redux/slice/authSlice";
+import { BgImage } from "../assets";
+import CustomButton from "../components/CustomButton";
+import { showToast } from "../utils/toast";
 
 const Register = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const {
-    register: formRegister,
+    control,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    mode: "onTouched",
+  });
 
   const onSubmit = async (data) => {
-    const {
-      "First Name": firstName,
-      "Last Name": lastName,
-      "Email Address": email,
-      Password: password,
-    } = data;
+    try {
+      const response = await dispatch(register(data));
+      const msg = response?.payload?.msg;
+      const isError = response?.payload?.err;
 
-    const transformedData = { firstName, lastName, email, password };
-    console.log(transformedData);
-
-    const response = await dispatch(register(transformedData));
-    console.log(response);
-
-    // Now you have the keys transformed as you wanted
+      if (isError) {
+        showToast(msg, "error");
+        return;
+      } else {
+        showToast(msg, "success");
+        dispatch(registerUser(data));
+        navigate("/");
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -45,7 +52,7 @@ const Register = () => {
             <div className="p-2 bg-[#065ad8] rounded text-white">
               <TbSocial />
             </div>
-            <span className="text-2xl text-[#065ad8] " font-semibold>
+            <span className="text-2xl text-[#065ad8] font-semibold">
               ShareFun
             </span>
           </div>
@@ -55,67 +62,116 @@ const Register = () => {
           </p>
 
           <form
+            className="mb-6 mt-4 flex flex-col gap-6"
             onSubmit={handleSubmit(onSubmit)}
-            className="py-8 flex flex-col gap-5"
           >
-            {/* First Name */}
-            <div className="w-full flex flex-col lg:flex-row gap-1 md:gap-2">
-              <div className="w-full">
-                <TextInput
-                  id="firstName"
-                  type="text"
-                  placeholder="First Name"
-                  styles="w-full"
-                  label="First Name"
-                  register={formRegister}
-                  required="true"
-                />
-              </div>
-            </div>
-            {/* Last Name */}
-            <div className="w-full flex flex-col lg:flex-row gap-1 md:gap-2">
-              <div className="w-full">
-                <TextInput
-                  id="lastName"
-                  type="text"
-                  placeholder="Last Name"
-                  styles="w-full"
-                  label="Last Name"
-                  register={formRegister}
-                  required="true"
-                />
-              </div>
-            </div>
-            {/* Email */}
-            <div className="w-full">
-              <TextInput
-                id="email"
-                type="email"
-                placeholder="email@example.com"
-                styles="w-full"
-                label="Email Address"
-                register={formRegister}
-                required="true"
+            <div>
+              <p className="text-gray-600 mb-1">First Name</p>
+              <Controller
+                name="firstName"
+                control={control}
+                rules={{
+                  required: "FirstName is Required",
+                  minLength: {
+                    value: 3,
+                    message: "Minimum 3 characters required",
+                  },
+                }}
+                render={({ field }) => (
+                  <Input
+                    size="lg"
+                    {...field}
+                    placeholder="First Name"
+                    error={Boolean(errors?.username?.message)}
+                  />
+                )}
               />
+              {errors?.username?.message && (
+                <span className="error-text">{errors?.username?.message}</span>
+              )}
             </div>
-            {/* Password */}
-            <div className="w-full flex flex-col lg:flex-row gap-1 md:gap-2">
-              <div className="w-full">
-                <TextInput
-                  id="password"
-                  type="password"
-                  placeholder="Password"
-                  styles="w-full"
-                  label="Password"
-                  register={formRegister}
-                  required="true"
-                />
-              </div>
+            <div>
+              <p className="text-gray-600 mb-1">Last Name</p>
+              <Controller
+                name="lastName"
+                control={control}
+                rules={{
+                  required: "LastName is Required",
+                  minLength: {
+                    value: 3,
+                    message: "Minimum 3 characters required",
+                  },
+                }}
+                render={({ field }) => (
+                  <Input
+                    size="lg"
+                    {...field}
+                    placeholder="Last Name"
+                    error={Boolean(errors?.username?.message)}
+                  />
+                )}
+              />
+              {errors?.username?.message && (
+                <span className="error-text">{errors?.username?.message}</span>
+              )}
             </div>
-            {/* CustomButton for form submission */}
+            <div>
+              <p className="text-gray-600 mb-1">Email Id</p>
+              <Controller
+                name="email"
+                control={control}
+                rules={{
+                  required: "Email ID is Required",
+                  pattern: {
+                    value: /^([a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/,
+                    message: "Email ID is invalid",
+                  },
+                }}
+                render={({ field }) => (
+                  <Input
+                    type="email"
+                    size="lg"
+                    {...field}
+                    placeholder="example@gmail.com"
+                    error={Boolean(errors?.email?.message)}
+                  />
+                )}
+              />
+              {errors?.email?.message && (
+                <span className="error-text">{errors?.email?.message}</span>
+              )}
+            </div>
+            <div>
+              <p className="text-gray-600 mb-1">Password</p>
+              <Controller
+                name="password"
+                control={control}
+                rules={{
+                  required: "Password is Required",
+                  pattern: {
+                    value:
+                      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[#$@!%&*?])[A-Za-z\d#$@!%&*?]{8,30}$/,
+                    message:
+                      "Password not strong enough. Should contain one capital letter, one small letter, one number, and one special character",
+                  },
+                }}
+                render={({ field }) => (
+                  <Input
+                    type="password"
+                    size="lg"
+                    {...field}
+                    placeholder="Password"
+                    error={Boolean(errors?.password?.message)}
+                  />
+                )}
+              />
+              {errors?.password?.message && (
+                <span className="error-text">{errors?.password?.message}</span>
+              )}
+            </div>
             <CustomButton
               type="submit"
-              containerStyles="inline-flex justify-center rounded-md bg-blue-500 px-8 py-3 text-sm font-medium outline-none hover:bg-blue-600"
+              containerStyles={`inline-flex justify-center rounded-md bg-blue-700 px-8 py-3 text-sm font-medium text-white outline-none`}
               title="Create Account"
             />
           </form>
@@ -154,7 +210,7 @@ const Register = () => {
 
           <div className="mt-16 text-center">
             <p className="text-white text-base">
-              Connect with friedns & have share for fun
+              Connect with friends & have fun sharing
             </p>
             <span className="text-sm text-white/80">
               Share memories with friends and the world.

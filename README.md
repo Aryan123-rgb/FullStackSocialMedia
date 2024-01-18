@@ -4,7 +4,7 @@ Share-Fun is an engaging and feature-rich full-stack social media platform desig
 
 ## Live URL
 
-(https://sharefun-client.vercel.app)
+(https://sharefun-client.vercel.app){:target="_blank"}
 
 ![Screenshot from 2024-01-19 00-52-25](https://github.com/Aryan123-rgb/FullStackSocialMedia/assets/118872531/0a38ab2b-5d78-44a3-b215-2b4bfaea2765)
 
